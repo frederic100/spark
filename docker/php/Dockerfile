@@ -1,4 +1,4 @@
-FROM php:8.3.4-fpm
+FROM php:8.3.12-fpm
 
 # Installation de l'extension pecl pcov
 RUN pecl install pcov \

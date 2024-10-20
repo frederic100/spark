@@ -1,0 +1,62 @@
+#!/bin/bash
+
+PROFILE="prod"
+
+function main() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --help)
+                _show_help
+                shift
+                ;;
+            --profile)
+                if [[ "$2" == "devlocal" || "$2" == "prod" ]]; then
+                    PROFILE="$2"
+                else
+                    echo "Erreur: Valeur de --profile invalide. Utilisez 'devlocal' ou 'prod'."
+                    exit 1
+                fi
+                shift 2
+                ;;
+            *)
+                echo "Erreur: Option inconnue $1"
+                exit 1
+                ;;
+        esac
+    done
+    _build
+}
+
+function _build()
+{
+    rm --recursive --force vendor
+    rm --recursive --force var
+    _create_var_directory
+    # Exécution de la commande composer install en fonction du profil
+    if [[ "$PROFILE" == "devlocal" ]]; then
+        echo "Running composer install in dev mode..."
+        bin/composer install
+    else
+        echo "Running composer install in prod mode..."
+        bin/composer install --no-dev --optimize-autoloader --no-progress
+    fi
+}
+
+function _create_var_directory() {
+    DIR_VAR=var
+    if [ ! -d "$DIR_VAR" ]; then
+        mkdir $DIR_VAR
+    fi
+}
+
+function _show_help() {
+    echo "Usage: ./build [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  --help        Affiche cette aide"
+    echo "  --profile     Définit le profil de build (valeurs possibles: devlocal, prod)"
+    echo "                Valeur par défaut: prod"
+    exit 0
+}
+
+main "$@"

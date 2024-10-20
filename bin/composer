@@ -1,14 +1,17 @@
 #!/bin/bash
-echo ${COMPOSER_HOME:-$HOME/.composer}
+
 if [ -t 0 ] ; then
     moinsit='-it'
 else
     moinsit=''
 fi
+
+USER_ID=$(id -u)
+GROUP_ID=$(id -g)
+
 docker run ${moinsit} --rm \
   --volume $PWD:/app \
-  --user 1000:1000 \
-  -ti \
+  --user $USER_ID:$GROUP_ID \
   --name composer-running-script \
   -v "$PWD":/usr/src \
   composer:2.6.6 composer $@

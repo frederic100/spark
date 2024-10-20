@@ -1,24 +1,26 @@
-#!/bin/sh
+#!/bin/bash
 
-cmd=`docker container ls | grep spark-php`
-status=$?
-if [ $status = 0 ]
-then
+PHP_IMAGE_NAME=spark-php
+CHAIN_CONTAINED_IN_PHP_CONTAINER_NAME=$PHP_IMAGE_NAME
+USER_ID=$(id -u)
+GROUP_ID=$(id -g)
+
+container_name=$(docker ps --filter "ancestor=$CHAIN_CONTAINED_IN_PHP_CONTAINER_NAME" --format "{{.Names}}" | head -n 1)
+
+if [ -n "$container_name" ]; then
 docker exec \
     -ti \
     -e APP_ENV=test \
-    spark-php php $@
+    "$container_name" php $@
 else
 ## execution de PHP de manière autonome (pas besoin d'un environnement de containers)
 docker run \
     --init \
     --rm \
     -ti \
-    --name php-spark-running-script \
-    -v "$(pwd)/bin/docker/php/php.ini:/usr/local/etc/php/php.ini" \
+    --name "$PHP_IMAGE_NAME-running-script" \
     -v "$PWD":"$PWD" \
-    --user 1000:1000 \
+    --user "$USER_ID:$GROUP_ID" \
     -w "$PWD" \
-    spark-php php $@
+    $PHP_IMAGE_NAME php $@
 fi
-

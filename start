@@ -1,7 +1,61 @@
 #!/bin/bash
 
-function start_docker_compose() {
-    (cd docker && docker compose up -d)
+source install-lib/load-env.sh
+
+#!/bin/bash
+
+# Initialisation des variables
+IP=""
+
+# Fonction d'affichage de l'usage
+function usage() {
+    echo "Usage: $0 [--ip <adresse_ip>]"
+    exit 1
 }
 
-start_docker_compose
+function prepare_param() {
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
+            --ip)
+                if [[ -n "$2" && "$2" != --* ]]; then
+                    IP="$2"
+                    shift 2
+                else
+                    echo "Erreur: l'option --ip nécessite une adresse IP."
+                    usage
+                fi
+                ;;
+            *)
+                echo "Erreur: option inconnue $1"
+                usage
+                ;;
+        esac
+    done
+
+    # Vérification des paramètres et exécution des actions correspondantes
+    if [[ -n "$IP" ]]; then
+        echo "Adresse IP fournie: $IP"
+    fi
+}
+
+function init_docker_userid_groupid() {
+    USERID=$(id -u)
+    export USERID
+    GROUPID=$(id -g)
+    export GROUPID
+}
+
+function start_docker_compose() {
+
+    if [ -z "$IP" ]; then
+        docker compose up -d
+    else
+        echo "salut$IP"
+        HOST_IP=$IP docker compose up -d
+    fi
+}
+
+init_docker_userid_groupid
+load_env
+prepare_param "$@"
+start_docker_compose "$1"

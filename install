@@ -1,18 +1,77 @@
 #!/bin/bash
 
-# Create the var directory if it does not exist
-function create_var_directory() {
-    DIR_VAR=var
-    if [ ! -d "$DIR_VAR" ]; then
-        mkdir $DIR_VAR
+source install-lib/load-env.sh
+
+PROFILE="prod"
+
+function main() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --help)
+                _show_help
+                shift
+                ;;
+            --profile)
+                if [[ "$2" == "devlocal" || "$2" == "prod" ]]; then
+                    PROFILE="$2"
+                else
+                    echo "Erreur: Valeur de --profile invalide. Utilisez 'devlocal' ou 'prod'."
+                    exit 1
+                fi
+                shift 2
+                ;;
+            *)
+                echo "Erreur: Option inconnue $1"
+                exit 1
+                ;;
+        esac
+    done
+    _run_steps
+}
+
+function _run_steps() {
+    echo "-------------Step 1: Load env and Create some directories----------------------------------------"
+    load_env
+    create_data_directory "$DATA_PATH"/accountmanager
+    echo "-------------Step 1: Done!"
+
+    echo "-------------Step 2: Build docker images---------------------------------------------------------"
+    init_docker_userid_groupid
+    build_docker_images
+    echo "-------------Step 2: Done!"
+
+    echo "-------------Step 3: Assure that no docker container is running anymore--------------------------"
+    ./stop
+    echo "-------------Step 3: Done!"
+
+    echo "-------------Step 4: Build for profile devlocal---------------"
+    if [[ "$PROFILE" == "devlocal" ]]; then
+        ./build --profile devlocal
+    fi
+    echo "-------------Step 4: Done!"
+
+}
+
+function init_docker_userid_groupid() {
+    USERID=$(id -u)
+    export USERID
+    GROUPID=$(id -g)
+    export GROUPID
+}
+
+function create_data_directory() {
+    DATA_DIR=$1
+    if [ ! -d "$DATA_DIR" ]; then
+        mkdir --parent $DATA_DIR
     fi
 }
 
-function build_php_image() {
-    docker build -t spark-php:latest docker/php
+function build_docker_images() {
+    USERID=$(id -u)
+    export USERID
+    GROUPID=$(id -g)
+    export GROUPID
+    docker compose build
 }
 
-
-create_var_directory
-build_php_image
-bin/composer install
+main "$@"

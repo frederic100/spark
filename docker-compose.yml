@@ -1,38 +1,37 @@
 services:
-  nginx-devlocal:
-    container_name: "spark-nginx"
+  nginx:
+    image: ${COMPOSE_PROJECT_NAME}-nginx
     build:
-      context: ../.
+      context: .
       dockerfile: docker/nginx/Dockerfile
     command: [nginx, '-g', 'daemon off;']
     depends_on:
-      - php-devlocal
+      - php
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - "$PWD/..:/var/spark"
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - "./:/var/${COMPOSE_PROJECT_NAME}"
     ports:
-      - "33080:80"
-      - "2443:443"
+      - "${HOST_IP}:35080:80"
     networks:
       - spark-networks
 
-  php-devlocal:
-    container_name: "spark-php"
+  php:
+    image: ${COMPOSE_PROJECT_NAME}-php
     build:
-      context: ../.
+      context: .
       dockerfile: docker/php/Dockerfile
       tags:
         - php-spark
-    user: 1000:1000
+    user: "${USERID}:${GROUPID}"
     volumes:
-      - "$PWD/..:/var/spark"
-      - "$PWD/..:$PWD/.."
-    working_dir: $PWD/..
+      - "./log:/var/${COMPOSE_PROJECT_NAME}/log"
+    working_dir: /var/${COMPOSE_PROJECT_NAME}
     networks:
       - spark-networks
 
 networks:
   spark-networks:
+    name: "${COMPOSE_PROJECT_NAME}-network"
     driver: bridge
     enable_ipv6: true
     ipam:
@@ -40,5 +39,3 @@ networks:
         - subnet: fdff:1:1::/112
           gateway: fdff:1:1::1
 
-volumes:
-  spark-db:
