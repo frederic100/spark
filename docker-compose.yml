@@ -25,6 +25,7 @@ services:
     user: "${USERID}:${GROUPID}"
     volumes:
       - "./log:/var/${COMPOSE_PROJECT_NAME}/log"
+      - $PWD:/var/${COMPOSE_PROJECT_NAME}
     working_dir: /var/${COMPOSE_PROJECT_NAME}
     networks:
       - spark-networks
