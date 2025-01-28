@@ -4,8 +4,9 @@ Use Spark to initialize a php project from scratch. This prepares you to have so
 
 # Install
 
-```console
+```bash
 git clone git@github.com:frederic100/spark.git
+./install
 ```
 
 # To Contribute to Spark
