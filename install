@@ -29,6 +29,16 @@ function main() {
     _run_steps
 }
 
+function _show_help() {
+    echo "Usage: ./build [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  --help        Affiche cette aide"
+    echo "  --profile     Définit le profil de build (valeurs possibles: devlocal, prod)"
+    echo "                Valeur par défaut: prod"
+    exit 0
+}
+
 function _run_steps() {
     echo "-------------Step 1: Load env and Create some directories----------------------------------------"
     load_env
