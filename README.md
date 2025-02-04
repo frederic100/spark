@@ -6,6 +6,7 @@ Use Spark to initialize a php project from scratch. This prepares you to have so
 
 ```bash
 git clone git@github.com:frederic100/spark.git
+cd spark
 ./install --profile devlocal
 ```
 
