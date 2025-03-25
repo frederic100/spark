@@ -9,7 +9,7 @@
   <coverage/>
   <testsuites>
     <testsuite name="all">
-      <directory suffix="Test.php">tests/unit</directory>
+      <directory suffix="Test.php">tests/integration</directory>
     </testsuite>
   </testsuites>
   <source>
