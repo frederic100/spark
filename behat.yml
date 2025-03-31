@@ -10,7 +10,7 @@ default:
       paths:
         - '%paths.base%/features/'
       contexts:
-        - Features\BasicBehatScenario
+        - Tests\Features\Spark\BasicBehatScenarioContext
 #  extensions:
 #    DVDoug\Behat\CodeCoverage\Extension:
 #      filter:

@@ -1,20 +1,20 @@
 <?php
 
-namespace Tests\Spark\Features;
+namespace Tests\Features\Spark;
 
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
+
 use Behat\Behat\Tester\Exception\PendingException;
 use Behat\Step\Given;
 use Behat\Step\When;
 use Behat\Step\Then;
-use PHPUnit\Framework\Assert;
 
 /**
  * Defines application features from the specific context.
  */
-class BasicBehatScenario implements Context
+class BasicBehatScenarioContext implements Context
 {
     /**
      * Initializes context.
@@ -27,22 +27,21 @@ class BasicBehatScenario implements Context
     {
     }
 
-
     #[Given('Spark is installed')]
     public function sparkIsInstalled(): void
     {
-        echo "Spark is installed!";
+        throw new PendingException();
     }
 
     #[When('I run Behat')]
     public function iRunBehat(): void
     {
-        echo "Behat is running";
+        throw new PendingException();
     }
 
     #[Then('This Scenario success')]
     public function thisScenarioSuccess(): void
     {
-        Assert::assertStringContainsString("succes", 'This Scenario success');
+        throw new PendingException();
     }
 }

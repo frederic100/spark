@@ -33,9 +33,9 @@
     },
     "autoload-dev": {
         "psr-4" : {
-            "Spark\\Tests\\Unit\\" : "tests/unit",
-            "Spark\\Tests\\Features\\": "tests/acceptation/Features",
-            "Spark\\Tests\\Integration\\": "tests/integration"
+            "Tests\\Unit\\Spark\\" : "tests/unit",
+            "Tests\\Features\\Spark\\": "tests/acceptation/Features",
+            "Tests\\Integration\\Spark\\": "tests/integration"
         }
     },
     "config": {
