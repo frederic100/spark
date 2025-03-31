@@ -14,4 +14,4 @@ docker run ${moinsit} --rm \
   --user $USER_ID:$GROUP_ID \
   --name composer-running-script \
   -v "$PWD":/usr/src \
-  composer:2.6.6 composer $@
+  composer:2.8.6 composer $@
