@@ -13,26 +13,27 @@ services:
     ports:
       - "${HOST_IP}:35080:80"
     networks:
-      - spark-networks
+      - ${COMPOSE_PROJECT_NAME}-network
 
   php:
-    image: ${COMPOSE_PROJECT_NAME}-php
+    image: ${DOCKER_PHP_BUILT_IMAGE}
+    pull_policy: ${PULL_POLICY:-never}
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-      tags:
-        - php-spark
-    user: "${USERID}:${GROUPID}"
+    user: '${USERID}:${GROUPID}'
     volumes:
-      - "./log:/var/${COMPOSE_PROJECT_NAME}/log"
-      - $PWD:/var/${COMPOSE_PROJECT_NAME}
-    working_dir: /var/${COMPOSE_PROJECT_NAME}
+      - ${DATA_PATH_STORE:-${DATA_PATH}}:/var/${COMPOSE_PROJECT_NAME}/${DATA_PATH}
+      - ${OPTIONAL_VOLUME:-/dev/null:/dev/null}
+    working_dir: ${WORKING_DIR:-/var/${COMPOSE_PROJECT_NAME}}
     networks:
-      - spark-networks
+      - ${COMPOSE_PROJECT_NAME}-network
+    environment:
+    - DATA_PATH=${DATA_PATH}
 
 networks:
-  spark-networks:
-    name: "${COMPOSE_PROJECT_NAME}-network"
+  spark-network:
+    name: '${COMPOSE_PROJECT_NAME}-network'
     driver: bridge
     enable_ipv6: true
     ipam:

@@ -1,8 +1,8 @@
 # Spark
 
-Use Spark to initialize a php project from scratch. This prepares you to have some basic tools to practice TDD, etc.
+Use Spark to bootstrap a PHP project from scratch. It sets up the essentials for practicing TDD and maintaining high code quality.
 
-# Install
+## Install
 
 ```bash
 git clone git@github.com:frederic100/spark.git
@@ -10,33 +10,78 @@ cd spark
 ./install --profile devlocal
 ```
 
-# To Contribute to Spark
+## Contributing
 
-## Requirements
+### Requirements
 
 * docker
 * git
 
+### Add a .env.local file
 
-## Unit tests
+To install locally or on a development server, be careful with the following environment variables:
+* DATA_PATH: path where data is stored; must be inside the project (default: ./data)
+* DATA_PATH_STORE: path for backups; generally outside the project (default: ../data/spark)
+* REMOVE_DATABASE_WHEN_INSTALL: remove database during install (default: false)
+* BUILD_WHEN_INSTALL: build application during install (default: false)
+* DOCKER_DEV: run development-specific containers (default: false)
+* DOCKER_PHP_BUILT_IMAGE: application prebuilt Docker image
+* OPTIONAL_VOLUME: mount a local volume for localhost development (default: empty)
+* LOCALDEV_WORKING_DIR: working directory useful for development (default: undefined)
+* URL_API: override the base URL used by internal API clients (default: empty)
+* PULL_POLICY: policy for pulling the PHP built image on start (default: missing)
+
+Typical local development .env.local:
+
+```
+DATA_PATH=./data
+REMOVE_DATABASE_WHEN_INSTALL=true
+BUILD_WHEN_INSTALL=true
+DOCKER_DEV=true
+OPTIONAL_VOLUME=.:/var/spark
+LOCALDEV_WORKING_DIR=true
+URL_API=http://nginx
+PULL_POLICY=never
+```
+
+Typical server development .env.local:
+```
+DATA_PATH=../data
+REMOVE_DATABASE_WHEN_INSTALL=true
+DOCKER_DEV=true
+DOCKER_PHP_BUILT_IMAGE=gitlab.logipro.com:5050/logipro-fr/captain-learning/captain-learning/captain-learning-php-dev:latest
+URL_API=https://dev.your-app.tld
+```
+
+For production and pre-production, a .env.local MUST NOT exist because default variables target the production environment.
+However, this project includes a frontend that calls the API, so in pre-production you need a .env.local to override `URL_API`.
+
+Typical pre-production .env.local:
+```
+URL_API=https://preprod.your-app.tld
+```
+
+
+## Tests
+
+### Unit tests
 
 ```bash
 bin/phpunit
 ```
 
-Using Test-Driven Development (TDD) principles (thanks to Kent Beck and others), following good practices (thanks to Uncle Bob and others).
+We use Test-Driven Development (TDD) principles and good practices.
 
-## Integration tests
-Integration tests are all other test categories except unit tests.
+### Integration tests
+Integration tests are all test categories other than unit tests.
 
 ```bash
 bin/integration
 ```
 
-## Acceptation tests
-Acceptation tests are specific integration tests to check if the app respects feature specifications. 
-Gherkin is the specification language.
-Behat is the php Gherkin running tool.
+### Acceptance tests
+Acceptance tests are integration tests that verify the application against feature specifications.
+Gherkin is the specification language; Behat is the PHP runner.
 
 ```bash
 bin/behat
@@ -48,7 +93,7 @@ bin/behat
 ```bash
 ./start
 ```
-have a local look at http://127.0.0.1:35080/ in your navigator
+Then open http://127.0.0.1:35080/ in your browser.
 
 ```bash
 ./stop
@@ -56,26 +101,26 @@ have a local look at http://127.0.0.1:35080/ in your navigator
 
 ## Quality
 
-Some indicators that seem interesting.
+Some indicators we aim for:
 
 * phpcs PSR12
-* phpstan level 9
+* phpstan level 10
 * coverage >=100%
 * infection MSI >=100%
 
-Quick check with:
+Quick check:
 ```bash
 ./codecheck
 ```
 
-Check coverage with:
+Check coverage:
 ```bash
 bin/phpunit --coverage-html var
 ```
-and view 'var/index.html' with your browser
+Then open `var/index.html` in your browser.
 
-Check infection with:
+Check infection:
 ```bash
 bin/infection
 ```
-and view 'var/infection.html' with your browser
+Then open `var/infection.html` in your browser.

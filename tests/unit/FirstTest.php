@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Spark;
+namespace Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 

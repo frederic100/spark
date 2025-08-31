@@ -42,7 +42,9 @@ function _show_help() {
 function _run_steps() {
     echo "-------------Step 1: Load env and Create some directories----------------------------------------"
     load_env
-    create_data_directory "$DATA_PATH"/accountmanager
+    create_usual_directories
+    create_data_directory "$DATA_PATH_STORE"
+    create_data_directory "$DATA_PATH"
     echo "-------------Step 1: Done!"
 
     echo "-------------Step 2: Build docker images---------------------------------------------------------"

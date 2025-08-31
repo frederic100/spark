@@ -1,7 +1,7 @@
 # behat.yml
 default:
   autoload:
-    '': '%paths.base%/tests/acceptation'
+    '': '%paths.base%/tests/features'
   formatters:
     progress: true
     pretty: true
@@ -10,7 +10,7 @@ default:
       paths:
         - '%paths.base%/features/'
       contexts:
-        - Tests\Features\Spark\BasicBehatScenarioContext
+        - Tests\Features\BasicBehatScenarioContext
 #  extensions:
 #    DVDoug\Behat\CodeCoverage\Extension:
 #      filter:

@@ -1,26 +1,26 @@
 #!/bin/bash
 
-PHP_IMAGE_NAME=spark-php
-CHAIN_CONTAINED_IN_PHP_CONTAINER_NAME=$PHP_IMAGE_NAME
-USER_ID=$(id -u)
-GROUP_ID=$(id -g)
+source "./install-lib/load-env.sh"
 
-container_name=$(docker ps --filter "ancestor=$CHAIN_CONTAINED_IN_PHP_CONTAINER_NAME" --format "{{.Names}}" | head -n 1)
+load_env
 
-if [ -n "$container_name" ]; then
-docker exec \
-    -ti \
-    -e APP_ENV=test \
-    "$container_name" php $@
-else
-## execution de PHP de manière autonome (pas besoin d'un environnement de containers)
-docker run \
-    --init \
-    --rm \
-    -ti \
-    --name "$PHP_IMAGE_NAME-running-script" \
-    -v "$PWD":"$PWD" \
-    --user "$USER_ID:$GROUP_ID" \
-    -w "$PWD" \
-    $PHP_IMAGE_NAME php $@
-fi
+USERID=$(id -u)
+GROUPID=$(id -g)
+
+export USERID
+export GROUPID
+
+function runPhpWith_Useful_Volume_And_WorkdirPath_That_Have_The_Same_Full_Path_In_Both_Dev_Local_Env_and_In_The_Container()
+{
+    if [ "$LOCALDEV_WORKING_DIR" = true ]; then
+        export WORKING_DIR=$PWD
+    fi;
+    docker compose \
+        $DOCKER_COMPOSE_FILES \
+        run \
+        --rm \
+        -v "$PWD":"$PWD" \
+        php php "$@"
+}
+
+runPhpWith_Useful_Volume_And_WorkdirPath_That_Have_The_Same_Full_Path_In_Both_Dev_Local_Env_and_In_The_Container "$@"

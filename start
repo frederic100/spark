@@ -50,7 +50,6 @@ function start_docker_compose() {
     if [ -z "$IP" ]; then
         docker compose up -d
     else
-        echo "salut$IP"
         HOST_IP=$IP docker compose up -d
     fi
 }

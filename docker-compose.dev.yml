@@ -1,0 +1,9 @@
+services:
+  mailer:
+    image: maildev/maildev:2.1.0
+    environment: 
+      MAILDEV_WEB_IP: "::"
+    ports: 
+      - "11710:1080"
+    networks:
+      - ${COMPOSE_PROJECT_NAME}-network

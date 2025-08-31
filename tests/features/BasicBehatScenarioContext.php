@@ -1,11 +1,10 @@
 <?php
 
-namespace Tests\Features\Spark;
+namespace Tests\Features;
 
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
-
 use Behat\Behat\Tester\Exception\PendingException;
 use Behat\Step\Given;
 use Behat\Step\When;
