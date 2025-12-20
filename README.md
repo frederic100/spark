@@ -7,7 +7,7 @@ Use Spark to bootstrap a PHP project from scratch. It sets up the essentials for
 ```bash
 git clone git@github.com:frederic100/spark.git
 cd spark
-./install --profile devlocal
+./install
 ```
 
 ## Contributing
@@ -20,7 +20,7 @@ cd spark
 ### Add a .env.local file
 
 To install locally or on a development server, be careful with the following environment variables:
-* DATA_PATH: path where data is stored; must be inside the project (default: ./data)
+* DATA_PATH: path where data is stored; must be inside the project (default: ./data/spark)
 * DATA_PATH_STORE: path for backups; generally outside the project (default: ../data/spark)
 * REMOVE_DATABASE_WHEN_INSTALL: remove database during install (default: false)
 * BUILD_WHEN_INSTALL: build application during install (default: false)
@@ -30,11 +30,14 @@ To install locally or on a development server, be careful with the following env
 * LOCALDEV_WORKING_DIR: working directory useful for development (default: undefined)
 * URL_API: override the base URL used by internal API clients (default: empty)
 * PULL_POLICY: policy for pulling the PHP built image on start (default: missing)
+* HOST_IP : expose a specific IP (for instance with Windonws / WSL set with 0.0.0.0 to fix navigator container network access issue)
 
 Typical local development .env.local:
 
 ```
-DATA_PATH=./data
+HOST_IP=0.0.0.0
+DATA_PATH=./data/spark
+DATA_PATH_STORE=./data/spark
 REMOVE_DATABASE_WHEN_INSTALL=true
 BUILD_WHEN_INSTALL=true
 DOCKER_DEV=true
@@ -46,7 +49,8 @@ PULL_POLICY=never
 
 Typical server development .env.local:
 ```
-DATA_PATH=../data
+DATA_PATH=./data/spark
+DATA_PATH_STORE=../data/spark
 REMOVE_DATABASE_WHEN_INSTALL=true
 DOCKER_DEV=true
 DOCKER_PHP_BUILT_IMAGE=gitlab.logipro.com:5050/logipro-fr/captain-learning/captain-learning/captain-learning-php-dev:latest

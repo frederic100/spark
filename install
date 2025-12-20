@@ -57,7 +57,7 @@ function _run_steps() {
     echo "-------------Step 3: Done!"
 
     echo "-------------Step 4: Build for profile devlocal---------------"
-    if [[ "$PROFILE" == "devlocal" ]]; then
+    if [[ "$BUILD_WHEN_INSTALL" = true ]]; then
         ./build --profile devlocal
     fi
     echo "-------------Step 4: Done!"
