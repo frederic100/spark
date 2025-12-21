@@ -20,6 +20,7 @@ use Spark\Application\Tenant\CreateTenant\CreateTenantService;
 use Spark\Domain\Tenant\TenantId;
 use Spark\Domain\Shared\Logging\LoggerRegistry;
 use Spark\Infrastructure\Bootstrap\LoggingBootstrap;
+use Spark\Infrastructure\Persistence\Tenant\TenantRepositoryInMemory;
 use Tests\Support\Logging\LoggerInMemory;
 
 /**
@@ -44,7 +45,8 @@ class TenantBasicsContext implements Context
     public function __construct()
     {
         $this->logger = new LoggerInMemory();
-        $this->createTenantService = new CreateTenantService();
+        $repository = new TenantRepositoryInMemory();
+        $this->createTenantService = new CreateTenantService($repository);
 
         // Configurer le logger pour les tests Behat
         LoggerRegistry::setLogger($this->logger);
