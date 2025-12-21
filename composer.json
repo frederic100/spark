@@ -19,7 +19,8 @@
         "psr/log": "^3.0",
         "thecodingmachine/safe": "^3.3",
         "phariscope/safephp": "^1.0",
-        "symfony/monolog-bundle": "^4.0"
+        "symfony/monolog-bundle": "^4.0",
+        "phariscope/event-store": "^2.0"
     },
     "require-dev": {
         "infection/extension-installer": "^0.1",
