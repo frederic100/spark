@@ -1,7 +1,7 @@
 #!/bin/sh
 
-bin/php vendor/bin/phpcbf --standard=PSR12 ./src ./tests
-bin/php vendor/bin/phpcs --standard=PSR12 ./src ./tests
+bin/php vendor/bin/phpcbf --standard=./phpcs.xml
+bin/php vendor/bin/phpcs --standard=./phpcs.xml
 
 bin/php vendor/bin/phpstan analyse --level=10 --memory-limit=256M ./src
 bin/php vendor/bin/phpstan analyse --level=10 --memory-limit=256M ./tests

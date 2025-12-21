@@ -71,6 +71,14 @@ function init_docker_userid_groupid() {
     export GROUPID
 }
 
+function create_usual_directories() {
+    if [ -d "./var" ]; then
+        rm -Rf ./var
+    fi;
+    mkdir --parents ./var
+    mkdir --parents ./vendor
+}
+
 function create_data_directory() {
     DATA_DIR=$1
     if [ ! -d "$DATA_DIR" ]; then

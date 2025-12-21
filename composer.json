@@ -15,7 +15,11 @@
         }
     ],
     "require": {
-        "php": "8.4.* || 8.5.*"
+        "php": "8.4.* || 8.5.*",
+        "psr/log": "^3.0",
+        "thecodingmachine/safe": "^3.3",
+        "phariscope/safephp": "^1.0",
+        "symfony/monolog-bundle": "^4.0"
     },
     "require-dev": {
         "infection/extension-installer": "^0.1",
@@ -35,7 +39,8 @@
         "psr-4" : {
             "Tests\\Unit\\" : "tests/unit/",
             "Tests\\Features\\": "tests/features/",
-            "Tests\\Integration\\": "tests/integration/"
+            "Tests\\Integration\\": "tests/integration/",
+            "Tests\\Support\\": "tests/Support/"
         }
     },
     "config": {

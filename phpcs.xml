@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<ruleset name="Spark Coding Standard">
+    <description>PSR12 with snake_case allowed for test methods</description>
+    
+    <!-- Use PSR12 as base -->
+    <rule ref="PSR12"/>
+    
+    <!-- Files to check -->
+    <file>./src</file>
+    <file>./tests</file>
+    
+    <!-- Allow snake_case for test methods -->
+    <rule ref="PSR1.Methods.CamelCapsMethodName">
+        <exclude-pattern>*/tests/*</exclude-pattern>
+    </rule>
+    
+    <!-- Show progress and use colors -->
+    <arg name="colors"/>
+    <arg value="sp"/>
+</ruleset>

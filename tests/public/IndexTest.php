@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Spark;
 
 use PHPUnit\Framework\TestCase;
+use Spark\Domain\Shared\BaseDir;
 
-class IndexTest extends TestCase
+final class IndexTest extends TestCase
 {
-    public function testEchoWelcome(): void
+    public function test_echo_welcome(): void
     {
         $this->expectOutputString('Welcome to Spark!');
-        require getcwd() . '/src/public/index.php';
+        require BaseDir::getRootPath('src/public/index.php');
     }
 }

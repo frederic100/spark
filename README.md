@@ -65,6 +65,24 @@ Typical pre-production .env.local:
 URL_API=https://preprod.your-app.tld
 ```
 
+## Agent
+
+This project is developed using **strict Domain-Driven Design (DDD)** and  
+**strict Test-Driven Development (TDD)**.
+
+Before starting any development session with Cursor, you must explicitly initialize the context.
+
+### Step 1 — Open Cursor Chat
+Open the Cursor chat panel in your editor.
+
+### Step 2 — Initialize the Session
+At the beginning of each session, send the following message:
+
+```
+Follow the instructions defined in AGENTS.md strictly.
+Do not write any code yet.
+Acknowledge and confirm before proceeding.
+```
 
 ## Tests
 
@@ -128,3 +146,4 @@ Check infection:
 bin/infection
 ```
 Then open `var/infection.html` in your browser.
+

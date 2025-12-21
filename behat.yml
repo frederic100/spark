@@ -10,7 +10,6 @@ default:
       paths:
         - '%paths.base%/features/'
       contexts:
-        - Tests\Features\BasicBehatScenarioContext
         - Tests\Features\TenantBasicsContext
 #  extensions:
 #    DVDoug\Behat\CodeCoverage\Extension:
