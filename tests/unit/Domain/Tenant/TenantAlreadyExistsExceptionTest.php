@@ -11,8 +11,10 @@ final class TenantAlreadyExistsExceptionTest extends TestCase
 {
     public function test_can_create_tenant_already_exists_exception(): void
     {
+        // Act
         $exception = TenantAlreadyExistsException::tenantAlreadyExists();
 
+        // Assert
         $this->assertInstanceOf(\DomainException::class, $exception);
         $this->assertStringContainsString('tenant already exists', $exception->getMessage());
     }

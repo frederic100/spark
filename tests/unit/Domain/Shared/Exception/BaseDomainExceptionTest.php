@@ -29,23 +29,29 @@ final class BaseDomainExceptionTest extends TestCase
 
     public function test_can_create_domain_exception(): void
     {
+        // Arrange
         $message = 'Test domain exception message';
         $code = 42;
 
-        $exception = new TestDomainException($message, $code);
+        // Act
+        $sut = new TestDomainException($message, $code);
 
-        $this->assertInstanceOf(\DomainException::class, $exception);
-        $this->assertInstanceOf(BaseDomainException::class, $exception);
-        $this->assertSame($message, $exception->getMessage());
-        $this->assertSame($code, $exception->getCode());
+        // Assert
+        $this->assertInstanceOf(\DomainException::class, $sut);
+        $this->assertInstanceOf(BaseDomainException::class, $sut);
+        $this->assertSame($message, $sut->getMessage());
+        $this->assertSame($code, $sut->getCode());
     }
 
     public function test_logs_exception_automatically_on_creation(): void
     {
+        // Arrange
         $message = 'Domain violation occurred';
 
+        // Act
         new TestDomainException($message);
 
+        // Assert
         $this->assertSame(1, $this->logger->getLogCount());
         $log = $this->logger->getLastLog();
 
@@ -60,10 +66,13 @@ final class BaseDomainExceptionTest extends TestCase
 
     public function test_includes_stack_trace_in_context(): void
     {
+        // Arrange
         $message = 'Exception with trace';
 
+        // Act
         new TestDomainException($message);
 
+        // Assert
         $log = $this->logger->getLastLog();
         $this->assertNotNull($log);
 
@@ -78,19 +87,37 @@ final class BaseDomainExceptionTest extends TestCase
 
     public function test_preserves_previous_exception(): void
     {
+        // Arrange
         $previous = new \Exception('Previous exception');
-        $exception = new TestDomainException('New exception', 0, $previous);
 
-        $this->assertSame($previous, $exception->getPrevious());
+        // Act
+        $sut = new TestDomainException('New exception', 0, $previous);
+
+        // Assert
+        $this->assertSame($previous, $sut->getPrevious());
     }
 
     public function test_exception_type_is_domain(): void
     {
+        // Act
         new TestDomainException('Test');
 
+        // Assert
         $this->assertTrue($this->logger->hasLogWithContext('exception_type', 'domain'));
 
         $domainLogs = $this->logger->getLogsByExceptionType('domain');
         $this->assertCount(1, $domainLogs);
+    }
+
+    public function test_default_code_is_zero_when_not_specified(): void
+    {
+        // Arrange
+        $message = 'Test exception';
+
+        // Act
+        $sut = new TestDomainException($message);
+
+        // Assert
+        $this->assertSame(0, $sut->getCode());
     }
 }

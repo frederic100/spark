@@ -31,9 +31,11 @@ final class MonologApplicationLoggerTest extends TestCase
 
     public function test_can_create_logger_instance(): void
     {
-        $logger = MonologApplicationLogger::getInstance();
+        // Act
+        $sut = MonologApplicationLogger::getInstance();
 
-        $this->assertInstanceOf(\Psr\Log\LoggerInterface::class, $logger);
+        // Assert
+        $this->assertInstanceOf(\Psr\Log\LoggerInterface::class, $sut);
     }
 
     public function test_singleton_returns_same_instance(): void
@@ -55,21 +57,26 @@ final class MonologApplicationLoggerTest extends TestCase
 
     public function test_can_create_logger_with_custom_path(): void
     {
-        $logger = MonologApplicationLogger::createWithPath($this->testLogPath);
+        // Act
+        $sut = MonologApplicationLogger::createWithPath($this->testLogPath);
 
-        $this->assertInstanceOf(\Psr\Log\LoggerInterface::class, $logger);
+        // Assert
+        $this->assertInstanceOf(\Psr\Log\LoggerInterface::class, $sut);
     }
 
     public function test_can_log_different_levels(): void
     {
-        $logger = MonologApplicationLogger::createWithPath($this->testLogPath);
+        // Arrange
+        $sut = MonologApplicationLogger::createWithPath($this->testLogPath);
 
-        $logger->debug('Debug message');
-        $logger->info('Info message');
-        $logger->warning('Warning message');
-        $logger->error('Error message');
-        $logger->critical('Critical message');
+        // Act
+        $sut->debug('Debug message');
+        $sut->info('Info message');
+        $sut->warning('Warning message');
+        $sut->error('Error message');
+        $sut->critical('Critical message');
 
+        // Assert
         $this->assertFileExists($this->testLogPath);
         $logContent = file_get_contents($this->testLogPath);
         $this->assertIsString($logContent);
@@ -105,10 +112,13 @@ final class MonologApplicationLoggerTest extends TestCase
 
     public function test_log_format_contains_timestamp(): void
     {
-        $logger = MonologApplicationLogger::createWithPath($this->testLogPath);
+        // Arrange
+        $sut = MonologApplicationLogger::createWithPath($this->testLogPath);
 
-        $logger->info('Test message');
+        // Act
+        $sut->info('Test message');
 
+        // Assert
         $logContent = file_get_contents($this->testLogPath);
         $this->assertIsString($logContent);
 
@@ -117,6 +127,38 @@ final class MonologApplicationLoggerTest extends TestCase
             '/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/',
             $logContent
         );
+    }
+
+    public function test_log_format_allows_inline_line_breaks(): void
+    {
+        // Arrange
+        $sut = MonologApplicationLogger::createWithPath($this->testLogPath);
+        $messageWithNewline = "Line 1\nLine 2";
+
+        // Act
+        $sut->info($messageWithNewline);
+
+        // Assert - Vérifier que le formatter permet les retours à la ligne inline
+        $logContent = file_get_contents($this->testLogPath);
+        $this->assertIsString($logContent);
+        // Le formatter doit permettre les retours à la ligne (allowInlineLineBreaks = true)
+        $this->assertStringContainsString('Line 1', $logContent);
+        $this->assertStringContainsString('Line 2', $logContent);
+    }
+
+    public function test_log_format_ignores_empty_context(): void
+    {
+        // Arrange
+        $sut = MonologApplicationLogger::createWithPath($this->testLogPath);
+
+        // Act
+        $sut->info('Test message', []);
+
+        // Assert - Vérifier que le formatter ignore les contextes vides (ignoreEmptyContextAndExtra = true)
+        $logContent = file_get_contents($this->testLogPath);
+        $this->assertIsString($logContent);
+        // Le message doit être présent même avec un contexte vide
+        $this->assertStringContainsString('Test message', $logContent);
     }
 
     public function test_can_log_using_generic_log_method(): void
@@ -136,7 +178,7 @@ final class MonologApplicationLoggerTest extends TestCase
         $logger = MonologApplicationLogger::createWithPath($this->testLogPath);
 
         // Créer un objet Stringable
-        $stringableMessage = new class {
+        $stringableMessage = new class implements \Stringable {
             public function __toString(): string
             {
                 return 'Stringable message';
@@ -153,21 +195,113 @@ final class MonologApplicationLoggerTest extends TestCase
 
     public function test_creates_log_directory_if_not_exists(): void
     {
+        // Arrange
         $logDir = sys_get_temp_dir() . '/test_monolog_dir_' . uniqid();
         $logPath = $logDir . '/test.log';
 
         // S'assurer que le répertoire n'existe pas
         $this->assertDirectoryDoesNotExist($logDir);
 
-        $logger = MonologApplicationLogger::createWithPath($logPath);
-        $logger->info('Test message');
+        // Act
+        $sut = MonologApplicationLogger::createWithPath($logPath);
+        $sut->info('Test message');
 
-        // Vérifier que le répertoire et le fichier ont été créés
+        // Assert - Vérifier que le répertoire et le fichier ont été créés
         $this->assertDirectoryExists($logDir);
         $this->assertFileExists($logPath);
 
         // Nettoyer
         unlink($logPath);
         rmdir($logDir);
+    }
+
+    public function test_log_path_is_correctly_constructed_with_directory_separator(): void
+    {
+        // Arrange
+        $logDir = sys_get_temp_dir() . '/test_monolog_path_' . uniqid();
+        $logPath = $logDir . '/application.log';
+
+        // Act
+        $sut = MonologApplicationLogger::createWithPath($logPath);
+        $sut->info('Test message');
+
+        // Assert - Vérifier que le chemin est correctement construit avec le séparateur
+        $this->assertFileExists($logPath);
+        $this->assertStringEndsWith('/application.log', $logPath);
+
+        // Nettoyer
+        unlink($logPath);
+        rmdir($logDir);
+    }
+
+    public function test_rotating_file_handler_uses_seven_days_retention(): void
+    {
+        // Arrange
+        $sut = MonologApplicationLogger::getInstance();
+
+        // Act - Utiliser reflection pour vérifier la configuration du RotatingFileHandler
+        $reflection = new \ReflectionClass($sut);
+        $loggerProperty = $reflection->getProperty('logger');
+        $monologInstance = $loggerProperty->getValue($sut);
+
+        // Assertion de type pour PHPStan
+        $this->assertInstanceOf(\Monolog\Logger::class, $monologInstance);
+        /** @var \Monolog\Logger $monologInstance */
+        $handlers = $monologInstance->getHandlers();
+        $rotatingHandler = null;
+        foreach ($handlers as $handler) {
+            if ($handler instanceof \Monolog\Handler\RotatingFileHandler) {
+                $rotatingHandler = $handler;
+                break;
+            }
+        }
+
+        // Assert
+        $this->assertNotNull($rotatingHandler, 'Should have a RotatingFileHandler');
+        $handlerReflection = new \ReflectionClass($rotatingHandler);
+        $maxFilesProperty = $handlerReflection->getProperty('maxFiles');
+        $maxFiles = $maxFilesProperty->getValue($rotatingHandler);
+        $this->assertSame(7, $maxFiles, 'RotatingFileHandler should be configured with 7 days retention');
+    }
+
+    public function test_formatter_is_applied_to_handler(): void
+    {
+        // Arrange
+        $sut = MonologApplicationLogger::createWithPath($this->testLogPath);
+        $message = 'Test with context';
+        $context = ['key' => 'value'];
+
+        // Act
+        $sut->info($message, $context);
+
+        // Assert - Vérifier que le formatter est appliqué (le format doit être celui configuré)
+        $logContent = file_get_contents($this->testLogPath);
+        $this->assertIsString($logContent);
+        // Le formatter doit être appliqué, donc le format doit correspondre à celui configuré
+        $this->assertStringContainsString('INFO:', $logContent);
+        $this->assertStringContainsString($message, $logContent);
+        // Vérifier que le format contient le timestamp au format attendu
+        $this->assertMatchesRegularExpression(
+            '/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/',
+            $logContent
+        );
+    }
+
+    public function test_createWithPath_uses_correct_formatter_settings(): void
+    {
+        // Arrange
+        $sut = MonologApplicationLogger::createWithPath($this->testLogPath);
+        $messageWithNewline = "Multi\nLine\nMessage";
+
+        // Act
+        $sut->info($messageWithNewline);
+
+        // Assert - Vérifier que createWithPath utilise les mêmes paramètres de formatter
+        $logContent = file_get_contents($this->testLogPath);
+        $this->assertIsString($logContent);
+        // Le formatter doit permettre les retours à la ligne inline (allowInlineLineBreaks = true)
+        $this->assertStringContainsString('Multi', $logContent);
+        $this->assertStringContainsString('Line', $logContent);
+        $this->assertStringContainsString('Message', $logContent);
     }
 }

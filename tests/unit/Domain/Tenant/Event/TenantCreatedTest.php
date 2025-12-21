@@ -13,28 +13,34 @@ final class TenantCreatedTest extends TestCase
 {
     public function test_can_create_tenant_created_event(): void
     {
+        // Arrange
         $tenantId = new TenantId('tenant-123');
         $tenantName = 'Acme Corporation';
         $occurredOn = new \DateTimeImmutable('2024-01-15 10:30:00');
 
-        $event = new TenantCreated($tenantId, $tenantName, $occurredOn);
+        // Act
+        $sut = new TenantCreated($tenantId, $tenantName, $occurredOn);
 
-        $this->assertInstanceOf(DomainEvent::class, $event);
-        $this->assertTrue($tenantId->equals($event->tenantId));
-        $this->assertSame($tenantName, $event->tenantName);
-        $this->assertSame($occurredOn, $event->occurredOn());
+        // Assert
+        $this->assertInstanceOf(DomainEvent::class, $sut);
+        $this->assertTrue($tenantId->equals($sut->tenantId));
+        $this->assertSame($tenantName, $sut->tenantName);
+        $this->assertSame($occurredOn, $sut->occurredOn());
     }
 
     public function test_can_create_tenant_created_event_with_default_occurred_on(): void
     {
+        // Arrange
         $tenantId = new TenantId('tenant-456');
         $tenantName = 'Another Corp';
 
-        $event = new TenantCreated($tenantId, $tenantName);
+        // Act
+        $sut = new TenantCreated($tenantId, $tenantName);
 
-        $this->assertInstanceOf(DomainEvent::class, $event);
-        $this->assertTrue($tenantId->equals($event->tenantId));
-        $this->assertSame($tenantName, $event->tenantName);
-        $this->assertInstanceOf(\DateTimeImmutable::class, $event->occurredOn());
+        // Assert
+        $this->assertInstanceOf(DomainEvent::class, $sut);
+        $this->assertTrue($tenantId->equals($sut->tenantId));
+        $this->assertSame($tenantName, $sut->tenantName);
+        $this->assertInstanceOf(\DateTimeImmutable::class, $sut->occurredOn());
     }
 }

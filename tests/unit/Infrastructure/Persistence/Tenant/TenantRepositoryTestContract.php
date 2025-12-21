@@ -26,13 +26,14 @@ abstract class TenantRepositoryTestContract extends TestCase
 
     public function test_can_save_tenant(): void
     {
-        $repository = $this->createRepository();
+        // Arrange
+        $sut = $this->createRepository();
         $tenantId = new TenantId('tenant-123');
         $tenantName = 'Acme Corporation';
         $tenant = new Tenant($tenantId, $tenantName);
 
         // Act
-        $repository->save($tenant);
+        $sut->save($tenant);
 
         // Assert - Vérifier que le tenant peut être sauvegardé sans exception
         $this->addToAssertionCount(1);
@@ -40,28 +41,32 @@ abstract class TenantRepositoryTestContract extends TestCase
 
     public function test_save_throws_exception_when_tenant_already_exists(): void
     {
-        $repository = $this->createRepository();
+        // Arrange
+        $sut = $this->createRepository();
         $tenant1 = new Tenant(new TenantId('tenant-1'), 'Corp 1');
         $tenant2 = new Tenant(new TenantId('tenant-2'), 'Corp 2');
 
-        $repository->save($tenant1);
+        $sut->save($tenant1);
 
-        // Act & Assert - Essayer de sauvegarder un deuxième tenant doit lever une exception
+        // Act & Assert
         $this->expectException(\Spark\Domain\Tenant\Exception\TenantAlreadyExistsException::class);
-        $repository->save($tenant2);
+        $sut->save($tenant2);
     }
 
     public function test_can_find_saved_tenant(): void
     {
-        $repository = $this->createRepository();
+        // Arrange
+        $sut = $this->createRepository();
         $tenantId = new TenantId('tenant-123');
         $tenantName = 'Acme Corporation';
         $tenant = new Tenant($tenantId, $tenantName);
 
-        $repository->save($tenant);
+        $sut->save($tenant);
 
-        $foundTenant = $repository->findById();
+        // Act
+        $foundTenant = $sut->findById();
 
+        // Assert
         $this->assertNotNull($foundTenant);
         $this->assertTrue($tenantId->equals($foundTenant->getId()));
         $this->assertSame($tenantName, $foundTenant->getName());
@@ -69,10 +74,13 @@ abstract class TenantRepositoryTestContract extends TestCase
 
     public function test_findById_returns_null_when_no_tenant_exists(): void
     {
-        $repository = $this->createRepository();
+        // Arrange
+        $sut = $this->createRepository();
 
-        $foundTenant = $repository->findById();
+        // Act
+        $foundTenant = $sut->findById();
 
+        // Assert
         $this->assertNull($foundTenant);
     }
 }

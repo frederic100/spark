@@ -29,23 +29,29 @@ final class BaseRuntimeExceptionTest extends TestCase
 
     public function test_can_create_runtime_exception(): void
     {
+        // Arrange
         $message = 'Test runtime exception message';
         $code = 500;
 
-        $exception = new TestRuntimeException($message, $code);
+        // Act
+        $sut = new TestRuntimeException($message, $code);
 
-        $this->assertInstanceOf(\RuntimeException::class, $exception);
-        $this->assertInstanceOf(BaseRuntimeException::class, $exception);
-        $this->assertSame($message, $exception->getMessage());
-        $this->assertSame($code, $exception->getCode());
+        // Assert
+        $this->assertInstanceOf(\RuntimeException::class, $sut);
+        $this->assertInstanceOf(BaseRuntimeException::class, $sut);
+        $this->assertSame($message, $sut->getMessage());
+        $this->assertSame($code, $sut->getCode());
     }
 
     public function test_logs_exception_automatically_on_creation(): void
     {
+        // Arrange
         $message = 'Runtime error occurred';
 
+        // Act
         new TestRuntimeException($message);
 
+        // Assert
         $this->assertSame(1, $this->logger->getLogCount());
         $log = $this->logger->getLastLog();
 
@@ -61,16 +67,22 @@ final class BaseRuntimeExceptionTest extends TestCase
 
     public function test_preserves_previous_exception(): void
     {
+        // Arrange
         $previous = new \RuntimeException('Previous runtime exception');
-        $exception = new TestRuntimeException('New runtime exception', 0, $previous);
 
-        $this->assertSame($previous, $exception->getPrevious());
+        // Act
+        $sut = new TestRuntimeException('New runtime exception', 0, $previous);
+
+        // Assert
+        $this->assertSame($previous, $sut->getPrevious());
     }
 
     public function test_exception_type_is_runtime(): void
     {
+        // Act
         new TestRuntimeException('Test');
 
+        // Assert
         $this->assertTrue($this->logger->hasLogWithContext('exception_type', 'runtime'));
 
         $runtimeLogs = $this->logger->getLogsByExceptionType('runtime');
@@ -79,8 +91,13 @@ final class BaseRuntimeExceptionTest extends TestCase
 
     public function test_context_includes_file_and_line_info(): void
     {
-        new TestRuntimeException('Test with location info');
+        // Arrange
+        $message = 'Test with location info';
 
+        // Act
+        new TestRuntimeException($message);
+
+        // Assert
         $log = $this->logger->getLastLog();
         $this->assertNotNull($log);
 
@@ -91,5 +108,17 @@ final class BaseRuntimeExceptionTest extends TestCase
         $file = $context['file'];
         $this->assertIsString($file);
         $this->assertStringContainsString('BaseRuntimeExceptionTest.php', $file);
+    }
+
+    public function test_default_code_is_zero_when_not_specified(): void
+    {
+        // Arrange
+        $message = 'Test exception';
+
+        // Act
+        $sut = new TestRuntimeException($message);
+
+        // Assert
+        $this->assertSame(0, $sut->getCode());
     }
 }

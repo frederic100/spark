@@ -34,27 +34,29 @@ final class TenantTest extends TestCase
 
     public function test_can_create_tenant_with_id_and_name(): void
     {
+        // Arrange
         $tenantId = new TenantId('tenant-123');
         $tenantName = 'Acme Corporation';
 
-        $tenant = new Tenant($tenantId, $tenantName);
+        // Act
+        $sut = new Tenant($tenantId, $tenantName);
 
-        $this->assertTrue($tenantId->equals($tenant->getId()));
-        $this->assertSame($tenantName, $tenant->getName());
+        // Assert
+        $this->assertTrue($tenantId->equals($sut->getId()));
+        $this->assertSame($tenantName, $sut->getName());
     }
 
     public function test_dispatches_tenant_created_event_on_creation(): void
     {
+        // Arrange
         $tenantId = new TenantId('tenant-123');
         $tenantName = 'Acme Corporation';
 
-        // Act - Create tenant (should dispatch event)
+        // Act
         new Tenant($tenantId, $tenantName);
-
-        // Distribute events
         $this->dispatcher->distribute();
 
-        // Assert - Event was dispatched
+        // Assert
         $this->assertEquals(1, $this->eventSpy->handleCallCount);
         $this->assertInstanceOf(TenantCreated::class, $this->eventSpy->domainEvent);
 
