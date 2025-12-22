@@ -1,0 +1,9 @@
+# config/packages/event_store.yaml
+event_store:
+  dsn: 'sqlite:////var/spark/${DATA_PATH}/database/events.sqlite'
+  table_name: 'stored_events'                 # optional  
+
+when@test:
+  event_store:
+    dsn: 'sqlite::memory:'
+    table_name: 'stored_events'                 # optional  

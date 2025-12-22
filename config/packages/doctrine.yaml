@@ -1,0 +1,26 @@
+# Configuration Doctrine ORM
+doctrine:
+    dbal:
+        url: '%env(DATABASE_URL)%'
+        
+    orm:
+        entity_managers:
+            default:
+                mappings:
+                    Spark:
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Domain'
+                        prefix: 'Spark\Domain'
+                        alias: Spark
+    orm:
+        auto_generate_proxy_classes: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        controller_resolver:
+        auto_mapping: true
+        mappings:
+        CaptainLearning:
+            is_bundle: false
+            type: xml
+            dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/Mapping'
+            prefix: 'Spark\Domain\Model'

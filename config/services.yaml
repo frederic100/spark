@@ -1,0 +1,5 @@
+# Configuration des services Symfony
+# Ce fichier permet de configurer les services de l'application.
+
+# Les commandes MultiTenant sont maintenant activées car Doctrine est disponible
+services:

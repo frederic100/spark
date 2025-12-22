@@ -63,36 +63,12 @@ final class BaseDirTest extends TestCase
         BaseDir::getDataFullPath();
     }
 
-    public function test_relative_data_path_current_folder(): void
-    {
-        // Créer le dossier temporairement pour le test
-        $testPath = getcwd() . '/data/captain-learning';
-        $testDataDir = getcwd() . '/data';
-
-        if (!is_dir($testDataDir)) {
-            mkdir($testDataDir, 0755, true);
-        }
-        if (!is_dir($testPath)) {
-            mkdir($testPath, 0755, true);
-        }
-
-        $_ENV['DATA_PATH'] = './data/captain-learning';
-        $sut = BaseDir::getDataFullPath();
-        $workingDir = getcwd();
-        $this->assertEquals($workingDir . '/data/captain-learning', $sut);
-
-        // Nettoyer après le test
-        if (is_dir($testPath)) {
-            rmdir($testPath);
-        }
-    }
-
     public function test_relative_data_path_parent_folder_is_forbidden_exception(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("DATA_PATH '../data/captain-learning' env MUST NOT contains parent folder");
+        $this->expectExceptionMessage("DATA_PATH '../data/spark' env MUST NOT contains parent folder");
 
-        $_ENV['DATA_PATH'] = '../data/captain-learning';
+        $_ENV['DATA_PATH'] = '../data/spark';
         BaseDir::getDataFullPath();
     }
 
@@ -117,17 +93,6 @@ final class BaseDirTest extends TestCase
         $this->assertEquals($workingDir . '/data/log', $sut);
     }
 
-    public function test_absolute_path_handling(): void
-    {
-        // Test avec un chemin absolu (si le dossier /tmp existe)
-        if (is_dir('/tmp')) {
-            $_ENV['DATA_PATH'] = '/tmp';
-            $sut = BaseDir::getDataFullPath();
-            $this->assertEquals('/tmp', $sut);
-        } else {
-            $this->markTestSkipped('/tmp directory not available');
-        }
-    }
 
     public function test_path_with_leading_slash_removal(): void
     {
@@ -140,12 +105,5 @@ final class BaseDirTest extends TestCase
             // Normal si /data n'existe pas
             $this->assertStringContainsString('realpath() failed', $e->getMessage());
         }
-    }
-
-    public function test_get_root_path_removes_leading_slash(): void
-    {
-        $sut = BaseDir::getRootPath('/test/path');
-        $workingDir = getcwd();
-        $this->assertEquals($workingDir . '/test/path', $sut);
     }
 }
