@@ -47,18 +47,6 @@ trait LoggableExceptionTrait
         // Détection basée sur l'héritage réel plutôt que le nom de classe
         $parentClasses = class_parents($this);
 
-        // class_parents() ne peut pas retourner false dans ce contexte
-        // car $this est forcément une instance d'une classe valide
-
-        // Vérifier si cette exception hérite de nos classes de base
-        if (in_array('Spark\Domain\Shared\Exception\BaseDomainException', $parentClasses, true)) {
-            return 'domain';
-        }
-
-        if (in_array('Spark\Domain\Shared\Exception\BaseRuntimeException', $parentClasses, true)) {
-            return 'runtime';
-        }
-
         // Fallback sur les classes PHP natives
         if (in_array(\DomainException::class, $parentClasses, true)) {
             return 'domain';

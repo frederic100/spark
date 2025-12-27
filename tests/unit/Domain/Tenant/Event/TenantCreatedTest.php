@@ -11,7 +11,7 @@ use Spark\Domain\Tenant\TenantId;
 
 final class TenantCreatedTest extends TestCase
 {
-    public function test_can_create_tenant_created_event(): void
+    public function test_can_create_tenantCreated_event(): void
     {
         // Arrange
         $tenantId = new TenantId('tenant-123');
@@ -28,7 +28,7 @@ final class TenantCreatedTest extends TestCase
         $this->assertSame($occurredOn, $sut->occurredOn());
     }
 
-    public function test_can_create_tenant_created_event_with_default_occurred_on(): void
+    public function test_can_create_tenantCreated_event_with_default_occurred_on(): void
     {
         // Arrange
         $tenantId = new TenantId('tenant-456');

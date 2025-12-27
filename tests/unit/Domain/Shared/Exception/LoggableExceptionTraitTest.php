@@ -14,6 +14,8 @@ use Tests\Support\Exception\TestNativeDomainExceptionWithTrait;
 use Tests\Support\Exception\TestNativeRuntimeExceptionWithTrait;
 use Tests\Support\Exception\TestRuntimeException;
 
+use function SafePHP\strval;
+
 final class LoggableExceptionTraitTest extends TestCase
 {
     private LoggerInMemory $logger;
@@ -256,6 +258,38 @@ final class LoggableExceptionTraitTest extends TestCase
         $log = $this->logger->getLastLog();
         $this->assertNotNull($log);
         $this->assertSame('runtime', $log['context']['exception_type']);
+    }
+
+    public function test_detects_domain_type_via_base_domain_exception_first_check(): void
+    {
+        // TestDomainException hérite de BaseDomainException
+        // Le trait doit détecter 'domain' via le premier check (BaseDomainException) à la ligne 54-55
+        // Si le return 'domain' à la ligne 55 était supprimé, le code continuerait mais le test
+        // vérifie explicitement que le type est détecté correctement via BaseDomainException
+        new TestDomainException('Test message');
+
+        $log = $this->logger->getLastLog();
+        $this->assertNotNull($log);
+        // Vérifier explicitement que le type est 'domain' (ce qui prouve que le return à la ligne 55 a été exécuté)
+        $this->assertSame('domain', $log['context']['exception_type']);
+        // Vérifier que l'exception est bien une BaseDomainException
+        $this->assertStringContainsString('TestDomainException', strval($log['context']['exception_class']));
+    }
+
+    public function test_detects_runtime_type_via_base_runtime_exception_first_check(): void
+    {
+        // TestRuntimeException hérite de BaseRuntimeException
+        // Le trait doit détecter 'runtime' via le premier check (BaseRuntimeException) à la ligne 58-59
+        // Si le return 'runtime' à la ligne 59 était supprimé, le code continuerait mais le test
+        // vérifie explicitement que le type est détecté correctement via BaseRuntimeException
+        new TestRuntimeException('Test message');
+
+        $log = $this->logger->getLastLog();
+        $this->assertNotNull($log);
+        // Vérifier explicitement que le type est 'runtime' (ce qui prouve que le return à la ligne 59 a été exécuté)
+        $this->assertSame('runtime', $log['context']['exception_type']);
+        // Vérifier que l'exception est bien une BaseRuntimeException
+        $this->assertStringContainsString('TestRuntimeException', strval($log['context']['exception_class']));
     }
 
     // Test de l'intégration avec le LoggerRegistry

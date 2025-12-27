@@ -29,6 +29,7 @@ use Tests\Support\Logging\LoggerInMemory;
 class TenantBasicsContext implements Context
 {
     private CreateTenantService $createTenantService;
+    private TenantRepositoryInMemory $tenantRepository;
     private CreateTenantRequest $tenantRequest;
     private CreateTenantResponse $tenantResponse;
     private LoggerInMemory $logger;
@@ -45,8 +46,8 @@ class TenantBasicsContext implements Context
     public function __construct()
     {
         $this->logger = new LoggerInMemory();
-        $repository = new TenantRepositoryInMemory();
-        $this->createTenantService = new CreateTenantService($repository);
+        $this->tenantRepository = new TenantRepositoryInMemory();
+        $this->createTenantService = new CreateTenantService($this->tenantRepository);
 
         // Configurer le logger pour les tests Behat
         LoggerRegistry::setLogger($this->logger);
@@ -136,10 +137,15 @@ class TenantBasicsContext implements Context
         // Vérifier que la réponse existe
         Assert::assertInstanceOf(CreateTenantResponse::class, $this->tenantResponse);
 
-        // Vérifier que le tenant a été créé avec les bonnes données
-        $createdTenant = $this->tenantResponse->getTenant();
-        Assert::assertEquals('tenant_test_001', (string) $createdTenant->getId());
-        Assert::assertEquals('Test Tenant Organization', $createdTenant->getName());
+        // Vérifier que le tenant a été créé avec le bon ID (CQRS : seulement l'ID de confirmation)
+        $createdTenantId = $this->tenantResponse->getTenantId();
+        Assert::assertEquals('tenant_test_001', (string) $createdTenantId);
+
+        // Pour vérifier les données complètes du tenant, on interroge le repository directement
+        $savedTenant = $this->tenantRepository->findById();
+        Assert::assertNotNull($savedTenant);
+        Assert::assertEquals('tenant_test_001', (string) $savedTenant->getId());
+        Assert::assertEquals('Test Tenant Organization', $savedTenant->getName());
 
         // Optionnel : Vérifier qu'aucune erreur n'a été loggée pendant la création
         $errorLogs = $this->logger->getLogsByLevel('error');

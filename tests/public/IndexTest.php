@@ -12,6 +12,7 @@ final class IndexTest extends TestCase
     public function test_echo_welcome(): void
     {
         $this->expectOutputString('Welcome to Spark!');
-        require BaseDir::getRootPath('src/public/index.php');
+        $baseDir = new BaseDir();
+        require $baseDir->getRootPath('src/public/index.php');
     }
 }

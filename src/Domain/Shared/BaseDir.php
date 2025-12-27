@@ -13,29 +13,47 @@ use function SafePHP\strval;
 
 final class BaseDir
 {
-    private const DIRECTORY_PATH = __DIR__ . '/../../..';
+    public const ENV_DATA_PATH = 'DATA_PATH';
 
-    public static function getRootPath(string $relativePath): string
-    {
-        $basePath = sprintf("%s/", realpath(self::DIRECTORY_PATH));
-        $basePath .= $relativePath;
-        return realpath($basePath);
+    private readonly string $basePath;
+    private readonly ?string $dataPath;
+    /** @var callable(string): string */
+    private readonly mixed $realpathCallable;
+
+    public function __construct(
+        ?string $basePath = null,
+        ?string $dataPath = null,
+        ?callable $realpathCallable = null
+    ) {
+        $this->basePath = $basePath ?? realpath(__DIR__ . '/../../..');
+        $this->dataPath = $dataPath ?? (isset($_ENV[self::ENV_DATA_PATH]) ? strval($_ENV[self::ENV_DATA_PATH]) : null);
+        $this->realpathCallable = $realpathCallable ?? 'Safe\realpath';
     }
 
-    public static function getDataFullPath(): string
+    public function getRootPath(string $relativePath): string
     {
-        if (!isset($_ENV['DATA_PATH'])) {
-            throw new InvalidArgumentException('DATA_PATH is not set');
+        $realpath = $this->realpathCallable;
+        $resolvedBasePath = $realpath($this->basePath);
+        $basePath = sprintf("%s/", strval($resolvedBasePath));
+        $basePath .= $relativePath;
+        $resolvedPath = $realpath($basePath);
+        return strval($resolvedPath);
+    }
+
+    public function getDataFullPath(): string
+    {
+        if ($this->dataPath === null) {
+            throw new InvalidArgumentException(self::ENV_DATA_PATH . ' is not set');
         }
-        $dataPath = strval($_ENV['DATA_PATH']);
+        $dataPath = $this->dataPath;
         if (str_contains($dataPath, '..')) {
             throw new InvalidArgumentException(
-                "DATA_PATH '" . $dataPath . "' env MUST NOT contains parent folder"
+                self::ENV_DATA_PATH . " '" . $dataPath . "' env MUST NOT contains parent folder"
             );
         }
         try {
             $path = '';
-            $path = self::getRootPath($dataPath);
+            $path = $this->getRootPath($dataPath);
             return $path;
         } catch (FilesystemException $e) {
             throw new FilesystemException(
@@ -50,9 +68,9 @@ final class BaseDir
         }
     }
 
-    public static function getLogFolder(): string
+    public function getLogFolder(): string
     {
-        $fullPath = self::getDataFullPath() . "/log";
+        $fullPath = $this->getDataFullPath() . "/log";
         return $fullPath;
     }
 }

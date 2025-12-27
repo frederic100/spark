@@ -10,7 +10,8 @@ use Spark\Domain\Shared\BaseDir;
  */
 
 // Obtenir le dossier de logs via BaseDir
-$logDir = BaseDir::getLogFolder();
+$baseDir = new BaseDir();
+$logDir = $baseDir->getLogFolder();
 
 return [
     'handlers' => [

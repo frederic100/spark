@@ -46,7 +46,7 @@ final class TenantTest extends TestCase
         $this->assertSame($tenantName, $sut->getName());
     }
 
-    public function test_dispatches_tenant_created_event_on_creation(): void
+    public function test_dispatches_tenantCreated_event_on_creation(): void
     {
         // Arrange
         $tenantId = new TenantId('tenant-123');
@@ -58,10 +58,9 @@ final class TenantTest extends TestCase
 
         // Assert
         $this->assertEquals(1, $this->eventSpy->handleCallCount);
-        $this->assertInstanceOf(TenantCreated::class, $this->eventSpy->domainEvent);
-
-        /** @var TenantCreated $event */
         $event = $this->eventSpy->domainEvent;
+        $this->assertInstanceOf(TenantCreated::class, $event);
+        /** @var TenantCreated $event (for fixing intelephense warning)*/
         $this->assertTrue($tenantId->equals($event->tenantId));
         $this->assertSame($tenantName, $event->tenantName);
     }

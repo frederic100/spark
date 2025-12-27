@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Infrastructure\Logging;
 
+use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use Spark\Domain\Shared\Logging\LoggerRegistry;
 use Spark\Infrastructure\Bootstrap\LoggingBootstrap;
-use Spark\Infrastructure\Logging\MonologApplicationLogger;
 use Tests\Support\Exception\TestDomainException;
 
 final class MonologIntegrationTest extends TestCase
@@ -16,7 +16,9 @@ final class MonologIntegrationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->testLogPath = sys_get_temp_dir() . '/test_integration_' . uniqid() . '.log';
+        // Créer un système de fichiers virtuel
+        $root = vfsStream::setup('root');
+        $this->testLogPath = vfsStream::url('root/test_integration.log');
 
         // Reset le registry pour un état propre
         LoggerRegistry::reset();
@@ -24,12 +26,7 @@ final class MonologIntegrationTest extends TestCase
 
     protected function tearDown(): void
     {
-        if (file_exists($this->testLogPath)) {
-            unlink($this->testLogPath);
-        }
-
         LoggerRegistry::reset();
-        MonologApplicationLogger::resetInstance();
     }
 
     public function test_logging_bootstrap_configures_monolog(): void
@@ -45,7 +42,7 @@ final class MonologIntegrationTest extends TestCase
     public function test_exceptions_are_logged_with_monolog(): void
     {
         // Configurer un logger de test
-        $testLogger = MonologApplicationLogger::createWithPath($this->testLogPath);
+        $testLogger = LoggingBootstrap::createLogger($this->testLogPath, false);
         LoggerRegistry::setLogger($testLogger);
 
         // Créer une exception qui devrait être loggée automatiquement
@@ -65,7 +62,7 @@ final class MonologIntegrationTest extends TestCase
 
     public function test_monolog_handles_complex_context(): void
     {
-        $testLogger = MonologApplicationLogger::createWithPath($this->testLogPath);
+        $testLogger = LoggingBootstrap::createLogger($this->testLogPath, false);
         LoggerRegistry::setLogger($testLogger);
 
         // Créer une exception avec un contexte complexe
@@ -82,7 +79,7 @@ final class MonologIntegrationTest extends TestCase
 
     public function test_monolog_preserves_log_levels(): void
     {
-        $testLogger = MonologApplicationLogger::createWithPath($this->testLogPath);
+        $testLogger = LoggingBootstrap::createLogger($this->testLogPath, false);
 
         // Tester différents niveaux
         $testLogger->debug('Debug level test');
@@ -102,17 +99,12 @@ final class MonologIntegrationTest extends TestCase
     public function test_monolog_rotation_configuration(): void
     {
         // Tester que l'instance par défaut utilise bien RotatingFileHandler
-        $logger = MonologApplicationLogger::getInstance();
+        LoggingBootstrap::initialize();
+        $logger = LoggerRegistry::getLogger();
 
-        // Utiliser reflection pour vérifier la configuration interne
-        $reflection = new \ReflectionClass($logger);
-        $loggerProperty = $reflection->getProperty('logger');
-        // Note: setAccessible() is deprecated since PHP 8.5 and has no effect since PHP 8.1
-        $monologInstance = $loggerProperty->getValue($logger);
-
-        $this->assertInstanceOf(\Monolog\Logger::class, $monologInstance);
-
-        $handlers = $monologInstance->getHandlers();
+        $this->assertInstanceOf(\Monolog\Logger::class, $logger);
+        /** @var \Monolog\Logger $logger */
+        $handlers = $logger->getHandlers();
         $this->assertNotEmpty($handlers);
 
         // Vérifier qu'au moins un handler est un RotatingFileHandler
@@ -125,5 +117,46 @@ final class MonologIntegrationTest extends TestCase
         }
 
         $this->assertTrue($hasRotatingHandler, 'Should have at least one RotatingFileHandler');
+    }
+
+    public function test_creates_log_directory_when_not_exists(): void
+    {
+        // Arrange
+        $logDir = $this->createVirtualFileSystemWithNonExistentLogDirectory();
+        $this->assertDirectoryDoesNotExist($logDir);
+        $logPath = $this->getApplicationLogFilePath($logDir);
+
+        // Act
+        $sut = LoggingBootstrap::createLogger($logPath, false);
+        $sut->info('Test message');
+
+        // Assert
+        $this->assertLogDirectoryWasCreatedAutomatically($logDir);
+        $this->assertLogFileWasCreatedAndContainsMessage($logPath, 'Test message');
+    }
+
+    private function createVirtualFileSystemWithNonExistentLogDirectory(): string
+    {
+        vfsStream::setup('root');
+        return vfsStream::url('root/data/log');
+    }
+
+    private function getApplicationLogFilePath(string $logDir): string
+    {
+        return $logDir . '/application.log';
+    }
+
+    private function assertLogDirectoryWasCreatedAutomatically(string $logDir): void
+    {
+        $this->assertDirectoryExists($logDir);
+    }
+
+    private function assertLogFileWasCreatedAndContainsMessage(string $logPath, string $expectedMessage): void
+    {
+        $this->assertFileExists($logPath);
+
+        $logContent = file_get_contents($logPath);
+        $this->assertIsString($logContent);
+        $this->assertStringContainsString($expectedMessage, $logContent);
     }
 }
