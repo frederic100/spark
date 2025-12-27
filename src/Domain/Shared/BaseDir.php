@@ -73,4 +73,9 @@ final class BaseDir
         $fullPath = $this->getDataFullPath() . "/log";
         return $fullPath;
     }
+
+    public function getSourcePath(): string
+    {
+        return $this->getRootPath('src');
+    }
 }

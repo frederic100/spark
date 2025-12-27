@@ -101,29 +101,7 @@ final class BaseDirTest extends TestCase
 
         // Créer un callable mock pour realpath qui fonctionne avec VFSStream
         // Il retourne simplement le chemin normalisé (sans .., avec /)
-        $realpathMock = function (string $path): string {
-            // Normaliser le chemin pour VFSStream
-            $path = str_replace('\\', '/', $path);
-            $path = rtrim($path, '/');
-            // Si le chemin existe dans VFSStream, le retourner tel quel
-            if (file_exists($path)) {
-                return $path;
-            }
-            // Sinon, simuler realpath en normalisant
-            $parts = explode('/', $path);
-            $normalized = [];
-            foreach ($parts as $part) {
-                if ($part === '' || $part === '.') {
-                    continue;
-                }
-                if ($part === '..') {
-                    array_pop($normalized);
-                    continue;
-                }
-                $normalized[] = $part;
-            }
-            return '/' . implode('/', $normalized);
-        };
+        $realpathMock = $this->createRealpathMockForVfsStream();
 
         // Créer une instance BaseDir avec le basePath virtuel et le mock realpath
         $baseDir = new BaseDir($basePath, null, $realpathMock);
@@ -154,6 +132,33 @@ final class BaseDirTest extends TestCase
         );
     }
 
+    private function createRealpathMockForVfsStream(): callable
+    {
+        return function (string $path): string {
+            // Normaliser le chemin pour VFSStream
+            $path = str_replace('\\', '/', $path);
+            $path = rtrim($path, '/');
+            // Si le chemin existe dans VFSStream, le retourner tel quel
+            if (file_exists($path)) {
+                return $path;
+            }
+            // Sinon, simuler realpath en normalisant
+            $parts = explode('/', $path);
+            $normalized = [];
+            foreach ($parts as $part) {
+                if ($part === '' || $part === '.') {
+                    continue;
+                }
+                if ($part === '..') {
+                    array_pop($normalized);
+                    continue;
+                }
+                $normalized[] = $part;
+            }
+            return '/' . implode('/', $normalized);
+        };
+    }
+
     public function test_get_data_dir(): void
     {
         $baseDir = new BaseDir();
@@ -182,5 +187,13 @@ final class BaseDirTest extends TestCase
             // Normal si /data n'existe pas
             $this->assertStringContainsString('realpath() failed', $e->getMessage());
         }
+    }
+
+    public function test_get_source_path(): void
+    {
+        $baseDir = new BaseDir();
+        $sut = $baseDir->getSourcePath();
+        $workingDir = getcwd();
+        $this->assertEquals($workingDir . '/src', $sut);
     }
 }

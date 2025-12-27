@@ -23,6 +23,7 @@
         "symfony/framework-bundle": "^7.0",
         "symfony/runtime": "^7.0",
         "symfony/monolog-bundle": "^4.0",
+        "symfony/var-exporter": "^7.0",
         "phariscope/event-store": "^2.0",
         "phariscope/multitenant": "^0.0.14",
         "doctrine/orm": "^3.6",
