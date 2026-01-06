@@ -95,3 +95,11 @@ function build_docker_images() {
 }
 
 main "$@"
+
+# main account database without tenant
+bin/console doctrine:database:create
+bin/console doctrine:schema:create
+
+# demo tenant database with tenant
+bin/console tenant:database:create --tenant_id demo
+bin/console tenant:schema:create --tenant_id demo

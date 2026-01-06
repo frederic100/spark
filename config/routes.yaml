@@ -1,0 +1,10 @@
+# Configuration des routes Symfony
+# Les routes sont également définies via les attributs #[Route] sur les contrôleurs
+
+api_v1:
+    resource: ../src/Infrastructure/Api/V1/
+    type: attribute
+    prefix: /api/v1
+
+
+

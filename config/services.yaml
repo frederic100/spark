@@ -3,3 +3,28 @@
 
 # Les commandes MultiTenant sont maintenant activées car Doctrine est disponible
 services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # Auto-configure les contrôleurs API
+    Spark\Infrastructure\Api\V1\:
+        resource: '../src/Infrastructure/Api/V1/*'
+        tags: ['controller.service_arguments']
+
+    # Charger les services de Persistence
+    Spark\Infrastructure\Persistence\:
+        resource: '../src/Infrastructure/Persistence/*'
+
+    # Configuration du repository Tenant
+    Spark\Domain\Tenant\TenantRepository:
+        alias: Spark\Infrastructure\Persistence\Tenant\TenantRepositoryDoctrine
+        public: false
+
+    # Configuration CORS
+    Spark\Infrastructure\Api\EventListener\CorsListener:
+        arguments:
+            $allowedOrigins: '%env(json:CORS_ALLOWED_ORIGINS)%'
+            $allowCredentials: '%env(bool:default::CORS_ALLOW_CREDENTIALS)%'
+        tags:
+            - { name: kernel.event_subscriber }

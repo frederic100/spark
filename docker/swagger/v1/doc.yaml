@@ -1,0 +1,94 @@
+openapi: 3.0.3
+info:
+  title: Spark API
+  description: API documentation for Spark application
+  version: 1.0.0
+servers:
+  - url: '{baseUrl}'
+    description: Use the base URL of the application
+    variables:
+      baseUrl:
+        enum:
+          - '/api/v1'
+          - 'http://172.17.0.1:35080/api/v1'
+          - 'http://localhost:35080/api/v1'
+        default: '/api/v1'
+    
+paths:
+  /tenant:
+    post:
+      summary: Initialize a tenant
+      description: Creates a new tenant in the application. Only one tenant can exist in the system.
+      operationId: createTenant
+      tags:
+        - Tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - name
+              properties:
+                id:
+                  type: string
+                  description: Unique identifier for the tenant
+                  example: "tenant-123"
+                name:
+                  type: string
+                  description: Name of the tenant
+                  example: "Acme Corporation"
+      responses:
+        '201':
+          description: Tenant created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      tenantId:
+                        type: string
+                        example: "tenant-123"
+        '400':
+          description: Bad request - validation error or tenant already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "InvalidArgumentException"
+                  error_message:
+                    type: string
+                    example: "Missing or empty \"name\" field"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Exception"
+                  error_message:
+                    type: string
+                    example: "An error occurred"
+
+
+

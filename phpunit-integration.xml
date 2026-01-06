@@ -6,6 +6,12 @@
   colors="true"
   bootstrap="tests/bootstrap.php"
   cacheDirectory="var/.phpunit.cache">
+  <php>
+    <env name="KERNEL_CLASS" value="Spark\Infrastructure\Symfony\Kernel"/>
+    <env name="APP_ENV" value="test"/>
+    <env name="APP_DEBUG" value="0"/>
+    <env name="DATABASE_URL" value="sqlite:///./var/test-integration.db"/>
+  </php>
   <coverage/>
   <testsuites>
     <testsuite name="all">

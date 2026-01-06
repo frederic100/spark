@@ -31,6 +31,7 @@ To install locally or on a development server, be careful with the following env
 * URL_API: override the base URL used by internal API clients (default: empty)
 * PULL_POLICY: policy for pulling the PHP built image on start (default: missing)
 * HOST_IP : expose a specific IP (for instance with Windonws / WSL set with 0.0.0.0 to fix navigator container network access issue)
+* CORS_ALLOWED_ORIGINS: list of servers allowed to request (default: ["https://prod.your-domaine.ltd"])
 
 Typical local development .env.local:
 
@@ -55,6 +56,7 @@ REMOVE_DATABASE_WHEN_INSTALL=true
 DOCKER_DEV=true
 DOCKER_PHP_BUILT_IMAGE=gitlab.logipro.com:5050/logipro-fr/captain-learning/captain-learning/captain-learning-php-dev:latest
 URL_API=https://dev.your-app.tld
+CORS_ALLOWED_ORIGINS=["http://localhost:35081"]
 ```
 
 For production and pre-production, a .env.local MUST NOT exist because default variables target the production environment.
@@ -63,6 +65,7 @@ However, this project includes a frontend that calls the API, so in pre-producti
 Typical pre-production .env.local:
 ```
 URL_API=https://preprod.your-app.tld
+CORS_ALLOWED_ORIGINS=["https://preprod.your-app.tld"]
 ```
 
 ## Agent
