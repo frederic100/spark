@@ -62,6 +62,20 @@ function _run_steps() {
     fi
     echo "-------------Step 4: Done!"
 
+    echo "-------------Step 5: create database schema if not done---------------"
+    create_database_schema_if_no_database_exist
+    echo "-------------Step 5: Done!"
+
+    echo "-------------Step 6: create demo tenant---------------"
+    # delete demo tenant if exists
+    DEMO_TENANT_DIR=$DATA_PATH_STORE/tenants/demo
+    if [ -d "$DEMO_TENANT_DIR" ]; then
+        rm -Rf $DEMO_TENANT_DIR
+    fi
+
+    bin/console tenant:database:create --tenant_id demo
+    bin/console tenant:schema:create --tenant_id demo
+    echo "-------------Step 6: Done!"
 }
 
 function init_docker_userid_groupid() {
@@ -81,9 +95,11 @@ function create_usual_directories() {
 
 function create_data_directory() {
     DATA_DIR=$1
+    echo "DATA_DIR=${DATA_DIR}"
     if [ ! -d "$DATA_DIR" ]; then
-        mkdir --parent $DATA_DIR
+        mkdir --parents $DATA_DIR
     fi
+    mkdir --parents $DATA_DIR/database
 }
 
 function build_docker_images() {
@@ -91,15 +107,28 @@ function build_docker_images() {
     export USERID
     GROUPID=$(id -g)
     export GROUPID
-    docker compose build
+
+    docker compose $DOCKER_COMPOSE_FILES build
+
+}
+
+function create_database_schema_if_no_database_exist() {
+    echo "Creating database..."
+    echo "DATA_DIR=${DATA_DIR}"
+    mkdir --parents $DATA_DIR
+
+    SQLITE_FILE=$DATA_PATH_STORE/database/spark.sqlite
+    echo "SQLITE_FILE=${SQLITE_FILE}"
+    if [ "$REMOVE_DATABASE_WHEN_INSTALL" == true ] && [ -f "$SQLITE_FILE" ]; then
+        if [ -f "$SQLITE_FILE" ]; then
+            echo "Le fichier $SQLITE_FILE déjà!"
+            echo "je le supprime."
+            rm "$SQLITE_FILE"
+        fi;
+    fi;
+
+    bin/console doctrine:schema:create
+    echo "Database schema created!"
 }
 
 main "$@"
-
-# main account database without tenant
-bin/console doctrine:database:create
-bin/console doctrine:schema:create
-
-# demo tenant database with tenant
-bin/console tenant:database:create --tenant_id demo
-bin/console tenant:schema:create --tenant_id demo
