@@ -1,0 +1,156 @@
+#!/bin/bash
+
+source install-lib/load-env.sh
+
+function show_help() {
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  --name NAME              Project name (required)"
+    echo "  --port-nginx PORT        Port for nginx (default: 35080)"
+    echo "  --port-swagger PORT       Port for swagger-ui (default: 35081)"
+    echo "  --namespace NAMESPACE     PHP namespace (default: derived from project name)"
+    echo "  --composer-name NAME      Composer package name (default: logipro/{project-name})"
+    echo "  --remove-git              Remove .git directory (default: true)"
+    echo "  --no-remove-git           Keep .git directory"
+    echo "  --help                    Show this help message"
+    echo ""
+    exit 0
+}
+
+function validate_prerequisites() {
+    if ! command -v docker &> /dev/null; then
+        echo "Error: docker is not installed or not in PATH"
+        exit 1
+    fi
+
+    if [ ! -f "composer.json" ]; then
+        echo "Error: composer.json not found. Are you in a Spark project directory?"
+        exit 1
+    fi
+
+    if [ ! -f "bin/install-new-project.php" ]; then
+        echo "Error: bin/install-new-project.php not found"
+        exit 1
+    fi
+}
+
+function parse_arguments() {
+    local args=()
+    local has_name=false
+
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --help)
+                show_help
+                ;;
+            --name)
+                if [[ -n "$2" && "$2" != --* ]]; then
+                    args+=("--name=$2")
+                    has_name=true
+                    shift 2
+                else
+                    echo "Error: --name requires a value"
+                    exit 1
+                fi
+                ;;
+            --port-nginx)
+                if [[ -n "$2" && "$2" != --* ]]; then
+                    args+=("--port-nginx=$2")
+                    shift 2
+                else
+                    echo "Error: --port-nginx requires a value"
+                    exit 1
+                fi
+                ;;
+            --port-swagger)
+                if [[ -n "$2" && "$2" != --* ]]; then
+                    args+=("--port-swagger=$2")
+                    shift 2
+                else
+                    echo "Error: --port-swagger requires a value"
+                    exit 1
+                fi
+                ;;
+            --namespace)
+                if [[ -n "$2" && "$2" != --* ]]; then
+                    args+=("--namespace=$2")
+                    shift 2
+                else
+                    echo "Error: --namespace requires a value"
+                    exit 1
+                fi
+                ;;
+            --composer-name)
+                if [[ -n "$2" && "$2" != --* ]]; then
+                    args+=("--composer-name=$2")
+                    shift 2
+                else
+                    echo "Error: --composer-name requires a value"
+                    exit 1
+                fi
+                ;;
+            --remove-git)
+                args+=("--remove-git=true")
+                shift
+                ;;
+            --no-remove-git)
+                args+=("--remove-git=false")
+                shift
+                ;;
+            *)
+                echo "Error: Unknown option $1"
+                show_help
+                ;;
+        esac
+    done
+
+    if [ "$has_name" = false ]; then
+        return 1
+    fi
+
+    # Export args as a space-separated string
+    echo "${args[*]}"
+    return 0
+}
+
+function init_docker_userid_groupid() {
+    USERID=$(id -u)
+    export USERID
+    GROUPID=$(id -g)
+    export GROUPID
+}
+
+function main() {
+    validate_prerequisites
+    load_env
+    init_docker_userid_groupid
+
+    local php_args
+    php_args=$(parse_arguments "$@")
+    local parse_exit_code=$?
+
+    if [ $parse_exit_code -ne 0 ]; then
+        echo "Error: --name is required"
+        show_help
+    fi
+
+    if [ -z "$php_args" ]; then
+        echo "Error: --name is required"
+        show_help
+    fi
+
+    echo "Running project installation via Docker..."
+    # Split php_args into array and pass correctly
+    read -ra args_array <<< "$php_args"
+    bin/php bin/install-new-project.php "${args_array[@]}"
+
+    exit_code=$?
+    if [ $exit_code -ne 0 ]; then
+        echo "Installation failed with exit code $exit_code"
+        exit $exit_code
+    fi
+}
+
+main "$@"
+
